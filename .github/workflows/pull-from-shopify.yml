@@ -12,22 +12,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # important pour pouvoir créer une branche
+          fetch-depth: 0
 
       - name: Install Shopify CLI
         run: |
           npm install -g @shopify/cli @shopify/theme
 
-      - name: Pull theme from Shopify
+      - name: 🔍 Debug secrets
+        run: |
+          echo "SHOPIFY_STORE: '${{ secrets.SHOPIFY_STORE }}'"
+          echo "SHOPIFY_ADMIN_API_KEY: '${{ secrets.SHOPIFY_ADMIN_API_KEY != '' && '✔️ SET' || '❌ EMPTY' }}'"
+          echo "SHOPIFY_THEME_ID_PROD: '${{ secrets.SHOPIFY_THEME_ID_PROD }}'"
+
+      - name: Link Shopify theme
         run: |
           mkdir shopify-pulled-theme
           cd shopify-pulled-theme
 
-          shopify theme pull \
+          shopify theme link \
             --store="${{ secrets.SHOPIFY_STORE }}" \
             --password="${{ secrets.SHOPIFY_ADMIN_API_KEY }}" \
-            --theme-id="${{ secrets.SHOPIFY_THEME_ID_PROD }}" \
-            --path="."
+            --theme-id="${{ secrets.SHOPIFY_THEME_ID_PROD }}"
+
+      - name: Pull theme from Shopify
+        run: |
+          cd shopify-pulled-theme
+          shopify theme pull
 
       - name: Commit pulled theme to new branch
         run: |
