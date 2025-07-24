@@ -1,0 +1,43 @@
+name: Deploy Shopify Theme - Staging
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy:
+    name: Deploy to Shopify Staging Theme
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install Shopify CLI
+        run: |
+          npm install -g @shopify/cli @shopify/theme
+
+      - name: Theme Check
+        run: |
+          curl -s https://shopify.dev/cli/installation/theme-check | bash
+          theme-check || true  # n'empêche pas le déploiement si erreurs non bloquantes
+
+      - name: Deploy to Shopify Staging
+        env:
+          SHOPIFY_STORE: novatize-formation.myshopify.com
+          SHOPIFY_PASSWORD: ${{ secrets.SHOPIFY_ADMIN_API_KEY }}
+          SHOPIFY_THEME_ID: ${{ secrets.SHOPIFY_THEME_ID_STAGING }}
+        run: |
+          echo "🔁 Déploiement vers Shopify Staging..."
+          shopify theme push \
+            --store="$SHOPIFY_STORE" \
+            --password="$SHOPIFY_PASSWORD" \
+            --theme-id="$SHOPIFY_THEME_ID" \
+            --path="." \
+            --allow-live
