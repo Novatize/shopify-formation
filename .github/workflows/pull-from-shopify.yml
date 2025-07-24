@@ -27,9 +27,9 @@ jobs:
           EOF
 
       - name: Pull theme from Shopify
+        working-directory: shopify-pulled-theme
         run: |
-          cd shopify-pulled-theme
-          shopify theme pull --path .
+            shopify theme pull --store="${{ secrets.SHOPIFY_STORE }}" --password="${{ secrets.SHOPIFY_ADMIN_API_KEY }}" --theme-id="${{ secrets.SHOPIFY_THEME_ID_PROD }}"
 
       - name: Commit pulled theme to new branch
         run: |
