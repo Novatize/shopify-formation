@@ -24,7 +24,7 @@ jobs:
         run: |
           mkdir pulled-theme
           shopify theme pull \
-            --path=./pulled-theme \
+            --path=. \
             --theme ${{ secrets.SHOPIFY_THEME_ID_PROD }} \
             --store ${{ secrets.SHOPIFY_FLAG_STORE }} \
             --password ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
