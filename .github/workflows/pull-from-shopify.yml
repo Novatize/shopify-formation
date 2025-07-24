@@ -1,43 +1,41 @@
-name: Pull Shopify Theme to Branch
+name: Pull Shopify Theme
 
 on:
   workflow_dispatch:
 
 jobs:
-  pull-theme:
-    name: Pull Live Theme and Commit to New Branch
+  pull:
+    name: Pull theme
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
 
       - name: Install Shopify CLI
-        run: |
-          npm install -g @shopify/cli @shopify/theme
+        run: npm install -g @shopify/cli
 
-      - name: Create folder and config file for Shopify CLI
+      - name: Pull Shopify theme
         run: |
-          mkdir shopify-pulled-theme
+          mkdir pulled-theme
+          shopify theme pull \
+            --path=./pulled-theme \
+            --theme ${{ secrets.SHOPIFY_THEME_ID_PROD }} \
+            --store ${{ secrets.SHOPIFY_FLAG_STORE }} \
+            --password ${{ secrets.SHOPIFY_CLI_THEME_TOKEN }}
 
-          cat > shopify-pulled-theme/.shopify-cli.yml <<EOF
-          theme_id: "${{ secrets.SHOPIFY_THEME_ID_PROD }}"
-          store: "${{ secrets.SHOPIFY_STORE }}"
-          password: "${{ secrets.SHOPIFY_ADMIN_API_KEY }}"
-          EOF
-
-      - name: Pull theme from Shopify
-        working-directory: shopify-pulled-theme
+      - name: Commit to new branch
         run: |
-            shopify theme pull
-
-      - name: Commit pulled theme to new branch
-        run: |
-          BRANCH_NAME=sync-from-shopify-$(date +'%Y%m%d-%H%M%S')
+          BRANCH="shopify-sync-$(date +'%Y%m%d-%H%M%S')"
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
-          cp -r shopify-pulled-theme/* .
-          git checkout -b "$BRANCH_NAME"
+          git checkout -b "$BRANCH"
+          cp -r pulled-theme/* .
           git add .
-          git commit -m "Pulled live Shopify theme on $(date)"
-          git push origin "$BRANCH_NAME"
+          git commit -m "🔄 Pulled Shopify live theme"
+          git push origin "$BRANCH"
