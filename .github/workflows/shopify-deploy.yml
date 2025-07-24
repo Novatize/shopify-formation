@@ -30,7 +30,7 @@ jobs:
 
       - name: Deploy to Shopify Staging
         env:
-          SHOPIFY_STORE: novatize-formation.myshopify.com
+          SHOPIFY_STORE: ${{ secrets.SHOPIFY_STORE }}
           SHOPIFY_PASSWORD: ${{ secrets.SHOPIFY_ADMIN_API_KEY }}
           SHOPIFY_THEME_ID: ${{ secrets.SHOPIFY_THEME_ID_STAGING }}
         run: |
