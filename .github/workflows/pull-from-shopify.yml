@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # important to allow branch creation and push
 
       - name: Install Shopify CLI
         run: |
@@ -22,9 +24,6 @@ jobs:
           SHOPIFY_PASSWORD: ${{ secrets.SHOPIFY_ADMIN_API_KEY }}
           SHOPIFY_THEME_ID: ${{ secrets.SHOPIFY_THEME_ID_PROD }}
         run: |
-          git config --global user.email "action@github.com"
-          git config --global user.name "GitHub Action"
-
           mkdir shopify-pulled-theme
           cd shopify-pulled-theme
 
@@ -36,9 +35,14 @@ jobs:
 
       - name: Commit pulled theme to new branch
         run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+
           BRANCH_NAME=sync-from-shopify-$(date +'%Y%m%d-%H%M%S')
-          git checkout -b "$BRANCH_NAME"
+
           cp -r shopify-pulled-theme/* .
+
+          git checkout -b "$BRANCH_NAME"
           git add .
           git commit -m "Pulled live Shopify theme on $(date)"
           git push origin "$BRANCH_NAME"
