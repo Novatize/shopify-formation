@@ -5,14 +5,12 @@ on:
 
 jobs:
   pull-theme:
-    name: Pull Live Shopify Theme and Commit to Branch
+    name: Pull Live Theme and Commit to New Branch
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Install Shopify CLI
         run: |
@@ -22,9 +20,11 @@ jobs:
         run: |
           mkdir shopify-pulled-theme
 
-          echo "theme_id: \"${{ secrets.SHOPIFY_THEME_ID_PROD }}\"" > shopify-pulled-theme/.shopify-cli.yml
-          echo "store: \"${{ secrets.SHOPIFY_STORE }}\"" >> shopify-pulled-theme/.shopify-cli.yml
-          echo "password: \"${{ secrets.SHOPIFY_ADMIN_API_KEY }}\"" >> shopify-pulled-theme/.shopify-cli.yml
+          cat > shopify-pulled-theme/.shopify-cli.yml <<EOF
+          theme_id: "${{ secrets.SHOPIFY_THEME_ID_PROD }}"
+          store: "${{ secrets.SHOPIFY_STORE }}"
+          password: "${{ secrets.SHOPIFY_ADMIN_API_KEY }}"
+          EOF
 
       - name: Pull theme from Shopify
         run: |
@@ -33,13 +33,11 @@ jobs:
 
       - name: Commit pulled theme to new branch
         run: |
+          BRANCH_NAME=sync-from-shopify-$(date +'%Y%m%d-%H%M%S')
           git config --global user.email "action@github.com"
           git config --global user.name "GitHub Action"
-
-          BRANCH_NAME="sync-from-shopify-$(date +'%Y%m%d-%H%M%S')"
-          git checkout -b "$BRANCH_NAME"
-
           cp -r shopify-pulled-theme/* .
+          git checkout -b "$BRANCH_NAME"
           git add .
           git commit -m "Pulled live Shopify theme on $(date)"
           git push origin "$BRANCH_NAME"
