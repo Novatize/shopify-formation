@@ -38,3 +38,12 @@ jobs:
           git add .
           git commit -m "🔄 Pulled Shopify live theme"
           git push origin "$BRANCH"
+
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v6
+        with:
+            token: ${{ secrets.GITHUB_TOKEN }}
+            source: ${{ steps.commit.outputs.branch }}
+            base: master
+            title: "🔄 Sync Shopify theme from live"
+            body: "Cette PR contient les derniers changements du thème live Shopify importés automatiquement."
