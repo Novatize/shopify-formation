@@ -1,0 +1,111 @@
+{{ 'section-product-slider.css' | asset_url | stylesheet_tag }}
+{{ 'component-card.css' | asset_url | stylesheet_tag }}
+{{ 'component-price.css' | asset_url | stylesheet_tag }}
+{{ 'component-slider.css' | asset_url | stylesheet_tag }}
+
+{%- liquid
+  assign slider_size = settings.product_slider_size | plus: 0
+  assign products_to_show = slider_size
+  if products_to_show == 0
+    assign products_to_show = 5
+  endif
+
+  assign collection_to_use = collections.all
+  if collection_to_use == blank
+    assign collection_to_use = collections.frontpage
+  endif
+  if collection_to_use == blank
+    assign collection_to_use = collections.all
+  endif
+
+  # Find the snowboard product for testing
+  assign snowboard_product = null
+  for product in collection_to_use.products
+    if product.title contains 'Multi-location Snowboard' or product.metafields.custom.snowboard_author != blank
+      assign snowboard_product = product
+      break
+    endif
+  endfor
+-%}
+
+<!-- Product Slider Section Start -->
+<section class="product-slider" aria-labelledby="ProductSliderHeading-{{ section.id }}">
+  <div class="page-width">
+    <div class="product-slider__header">
+      <h2 id="ProductSliderHeading-{{ section.id }}" class="product-slider__title h1">
+        {{ 'sections.product_slider.title' | t }}
+      </h2>
+    </div>
+
+    <div class="product-slider__content">
+      <ul
+        class="product-grid"
+        role="list"
+        aria-label="{{ 'sections.product_slider.title' | t }}"
+      >
+        {%- comment -%} Show snowboard product first if found {%- endcomment -%}
+        {%- if snowboard_product != null -%}
+          <li class="product-item product-item--featured">
+            <article>
+              <h3 class="product-item__title">
+                <a href="{{ snowboard_product.url }}" class="product-item__link">
+                  {{ snowboard_product.title }}
+                </a>
+              </h3>
+              <p class="product-item__price">
+                <span class="visually-hidden">Price: </span>
+                {{ snowboard_product.price | money }}
+              </p>
+
+              {%- if snowboard_product.metafields.custom.snowboard_author != blank -%}
+                <div class="product-author" role="contentinfo">
+                  <strong>Author:</strong> {{ snowboard_product.metafields.custom.snowboard_author }}
+                </div>
+              {%- endif -%}
+            </article>
+          </li>
+        {%- endif -%}
+
+        {%- comment -%} Show other products, excluding the snowboard product {%- endcomment -%}
+        {%- assign products_shown = 0 -%}
+        {%- if snowboard_product != null -%}
+          {%- assign products_shown = 1 -%}
+        {%- endif -%}
+
+        {%- for product in collection_to_use.products limit: products_to_show -%}
+          {%- if product.id != snowboard_product.id -%}
+            {%- if products_shown < products_to_show -%}
+              <li class="product-item">
+                <article>
+                  <h3 class="product-item__title">
+                    <a href="{{ product.url }}" class="product-item__link">
+                      {{ product.title }}
+                    </a>
+                  </h3>
+                  <p class="product-item__price">
+                    <span class="visually-hidden">Price: </span>
+                    {{ product.price | money }}
+                  </p>
+
+                  {%- if product.metafields.custom.snowboard_author != blank -%}
+                    <div class="product-author" role="contentinfo">
+                      <strong>Author:</strong> {{ product.metafields.custom.snowboard_author }}
+                    </div>
+                  {%- endif -%}
+                </article>
+              </li>
+              {%- assign products_shown = products_shown | plus: 1 -%}
+            {%- endif -%}
+          {%- endif -%}
+        {%- else -%}
+          {%- if snowboard_product == null -%}
+            <li class="product-item product-item--empty">
+              <p>No products found in collection</p>
+            </li>
+          {%- endif -%}
+        {%- endfor -%}
+      </ul>
+    </div>
+  </div>
+</section>
+<!-- Product Slider Section End -->
